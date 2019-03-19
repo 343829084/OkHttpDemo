@@ -46,6 +46,7 @@ import static okhttp3.internal.Util.sameConnection;
  * smallest blast radius possible. If an HTTP/2 stream is active, canceling will cancel that stream
  * but not the other streams sharing its connection. But if the TLS handshake is still in progress
  * then canceling may break the entire connection.
+ * 连接应用程序和网络层
  */
 public final class Transmitter {
   private final OkHttpClient client;

@@ -35,13 +35,17 @@ import static okhttp3.internal.Util.checkDuration;
  *
  * <p>If the chain is for an application interceptor then {@link #connection} must be null.
  * Otherwise it is for a network interceptor and {@link #connection} must be non-null.
+ *
+ * 拦截器处理调用过程的实现类
  */
 public final class RealInterceptorChain implements Interceptor.Chain {
   private final List<Interceptor> interceptors;
+  private final Request request;
+
+
   private final Transmitter transmitter;
   private final @Nullable Exchange exchange;
   private final int index;
-  private final Request request;
   private final Call call;
   private final int connectTimeout;
   private final int readTimeout;
@@ -121,6 +125,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
       throws IOException {
     if (index >= interceptors.size()) throw new AssertionError();
 
+    //每创建1次实例，call就加1
     calls++;
 
     // If we already have a stream, confirm that the incoming request will use it.

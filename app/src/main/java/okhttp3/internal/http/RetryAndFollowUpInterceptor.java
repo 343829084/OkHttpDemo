@@ -61,7 +61,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
    * How many redirects and auth challenges should we attempt? Chrome follows 21 redirects; Firefox,
    * curl, and wget follow 20; Safari follows 16; and HTTP/1.0 recommends 5.
    */
-  private static final int MAX_FOLLOW_UPS = 20;
+  private static final int MAX_FOLLOW_UPS = 20;//最大恢复次数
 
   private final OkHttpClient client;
 
@@ -211,8 +211,9 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
 
   /**
    * Figures out the HTTP request to make in response to receiving {@code userResponse}. This will
-   * either add authentication headers, follow redirects or handle a client request timeout. If a
-   * follow-up is either unnecessary or not applicable, this returns null.
+   *    * either add authentication headers, follow redirects or handle a client request timeout. If a
+   *    * follow-up is either unnecessary or not applicable, this returns null.
+   *    根据响应码(code)和响应头(header)，查看是否需要重定向，并重新设置请求，当然，如果是正常响应则直接返回Response停止循环
    */
   private Request followUpRequest(Response userResponse, @Nullable Route route) throws IOException {
     if (userResponse == null) throw new IllegalStateException();

@@ -33,6 +33,11 @@ import okhttp3.internal.Util;
  * pinner.
  *
  * <p>HTTP requests that share the same {@code Address} may also share the same {@link Connection}.
+ * 描述了建立连接的全部配置
+ * 包含请求的三种方式
+ * 1：直连
+ * 2：走代理
+ * 3：ssl
  */
 public final class Address {
   final HttpUrl url;

@@ -36,6 +36,11 @@ import okhttp3.internal.Util;
 /**
  * Selects routes to connect to an origin server. Each connection requires a choice of proxy server,
  * IP address, and TLS mode. Connections may also be recycled.
+ * 路由选择器
+ * 这个类主要是选择连接到服务器的路由，每个连接应该是代理服务器/IP地址/TLS模式 三者中的一种
+ *
+ *
+ * 1收集路由信息，2选择路由，3维护失败路由。
  */
 final class RouteSelector {
   private final Address address;

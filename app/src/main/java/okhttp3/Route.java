@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
  * </ul>
  *
  * <p>Each route is a specific selection of these options.
+ * 连接使用的路由到抽象服务器
+ * 描述网络数据包传输的路径，最主要还是描述直接与其建立TCP连接的目标端点。
  */
 public final class Route {
   final Address address;
