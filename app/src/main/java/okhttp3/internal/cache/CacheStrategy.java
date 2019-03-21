@@ -145,6 +145,14 @@ public final class CacheStrategy {
       if (cacheResponse != null) {
         this.sentRequestMillis = cacheResponse.sentRequestAtMillis();
         this.receivedResponseMillis = cacheResponse.receivedResponseAtMillis();
+        /**
+         * 解析响应报文头部信息
+         * Date:服务器时间
+         * Expires：
+         * Last-Modified：上次修改时间
+         * ETag：
+         * Age:
+         */
         Headers headers = cacheResponse.headers();
         for (int i = 0, size = headers.size(); i < size; i++) {
           String fieldName = headers.name(i);
@@ -170,24 +178,30 @@ public final class CacheStrategy {
      * Returns a strategy to satisfy {@code request} using the a cached response {@code response}.
      */
     public CacheStrategy get() {
+      //获取当前的缓存策略
       CacheStrategy candidate = getCandidate();
-
+    //如果是网络请求不为Null,并且请求里面设置的cacheControl是只用缓存
       if (candidate.networkRequest != null && request.cacheControl().onlyIfCached()) {
         // We're forbidden from using the network and the cache is insufficient.
+        //使用只用缓存
         return new CacheStrategy(null, null);
       }
 
       return candidate;
     }
 
-    /** Returns a strategy to use assuming the request can use the network. */
+    /** Returns a strategy to use assuming the request can use the network.
+     * 返回要使用的策略，假设请求可以使用网络。
+     * */
     private CacheStrategy getCandidate() {
       // No cached response.
+      //没有缓存响应，返回1个无响应的策略
       if (cacheResponse == null) {
         return new CacheStrategy(request, null);
       }
 
       // Drop the cached response if it's missing a required handshake.
+      //如果是https，握手失效，也返回1个没有响应的策略
       if (request.isHttps() && cacheResponse.handshake() == null) {
         return new CacheStrategy(request, null);
       }
@@ -195,34 +209,41 @@ public final class CacheStrategy {
       // If this response shouldn't have been stored, it should never be used
       // as a response source. This check should be redundant as long as the
       // persistence store is well-behaved and the rules are constant.
+      //响应如果不能被缓存，返回1个无响应的策略
       if (!isCacheable(cacheResponse, request)) {
         return new CacheStrategy(request, null);
       }
 
-      CacheControl requestCaching = request.cacheControl();
+      CacheControl requestCaching = request.cacheControl();//获取请求头里面的cacheControl
+      //如果请求头里面设置了不缓存，那就不存储
       if (requestCaching.noCache() || hasConditions(request)) {
         return new CacheStrategy(request, null);
       }
 
-      CacheControl responseCaching = cacheResponse.cacheControl();
+      CacheControl responseCaching = cacheResponse.cacheControl();//获取响应的cacheControl
 
-      long ageMillis = cacheResponseAge();
-      long freshMillis = computeFreshnessLifetime();
+      long ageMillis = cacheResponseAge();//获取响应年龄
+      long freshMillis = computeFreshnessLifetime();//获取上次响应刷新的时间
 
+      //如果请求里面有最大持久时间要求，则两者选择最短时间的要求
       if (requestCaching.maxAgeSeconds() != -1) {
         freshMillis = Math.min(freshMillis, SECONDS.toMillis(requestCaching.maxAgeSeconds()));
       }
 
       long minFreshMillis = 0;
+      //如果请求里面有最小刷新时间的限制，用请求中最小更新时间来更新最小时间限制
       if (requestCaching.minFreshSeconds() != -1) {
         minFreshMillis = SECONDS.toMillis(requestCaching.minFreshSeconds());
       }
 
-      long maxStaleMillis = 0;
+      long maxStaleMillis = 0;//最大验证时间
+      //更新最大验证时间
       if (!responseCaching.mustRevalidate() && requestCaching.maxStaleSeconds() != -1) {
         maxStaleMillis = SECONDS.toMillis(requestCaching.maxStaleSeconds());
       }
 
+      //响应支持缓存，持续时间+最短刷新时间 < 上次刷新时间+最大验证时间，则可以缓存
+      //限制时间-已经过去的时间 + 可以存活的时间 < 最大存活时间
       if (!responseCaching.noCache() && ageMillis + minFreshMillis < freshMillis + maxStaleMillis) {
         Response.Builder builder = cacheResponse.newBuilder();
         if (ageMillis + minFreshMillis >= freshMillis) {
@@ -232,11 +253,14 @@ public final class CacheStrategy {
         if (ageMillis > oneDayMillis && isFreshnessLifetimeHeuristic()) {
           builder.addHeader("Warning", "113 HttpURLConnection \"Heuristic expiration\"");
         }
+        //缓存命中，则返回1个带缓存响应的策略
         return new CacheStrategy(null, builder.build());
       }
 
       // Find a condition to add to the request. If the condition is satisfied, the response body
       // will not be transmitted.
+
+      //如果想缓存request，必须满足一定的条件
       String conditionName;
       String conditionValue;
       if (etag != null) {
@@ -258,6 +282,7 @@ public final class CacheStrategy {
       Request conditionalRequest = request.newBuilder()
           .headers(conditionalRequestHeaders.build())
           .build();
+      //返回1个有条件的缓存Request的策略
       return new CacheStrategy(conditionalRequest, cacheResponse);
     }
 

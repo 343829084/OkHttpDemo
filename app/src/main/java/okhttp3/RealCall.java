@@ -188,6 +188,7 @@ final class RealCall implements Call {
       boolean signalledCallback = false;
       timeout.enter();
       try {
+        //执行耗时任务 并且回调接口
         Response response = getResponseWithInterceptorChain();
         if (transmitter.isCanceled()) throw new IOException("Canceled");
         signalledCallback = true;
@@ -200,6 +201,7 @@ final class RealCall implements Call {
           responseCallback.onFailure(RealCall.this, e);
         }
       } finally {
+        //出队
         client.dispatcher().finished(this);
       }
     }

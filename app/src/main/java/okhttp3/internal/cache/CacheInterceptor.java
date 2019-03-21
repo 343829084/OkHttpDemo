@@ -56,10 +56,19 @@ public final class CacheInterceptor implements Interceptor {
         : null;
 
     long now = System.currentTimeMillis();
-
+    //获取缓存策略
     CacheStrategy strategy = new CacheStrategy.Factory(now, chain.request(), cacheCandidate).get();
+    //缓存策略中的请求--用来判断是否进行网络请求
     Request networkRequest = strategy.networkRequest;
+    //缓存策略中的响应--判断缓存是否命中
     Response cacheResponse = strategy.cacheResponse;
+    /**
+     * 总结有4种策略
+     * 1  networkRequest == null,cacheResponse == null:不进行网络请求，缓存又未命中 ，直接返回503错误，不往下执行拦截器
+     * 2 networkRequest !=null,cacheResponse == null：执行网络请求，缓存未命中，正常执行
+     * 3 networkRequest == null,cacheResponse != null:不执行网络请求，缓存命中，返回缓存信息
+     * 4 networkRequest ！= null,cacheResponse ！= null：执行网络请求，缓存命中，判断请求Header中的标签信息，根据标签是否满足情况判断是否执行网络请求
+     */
 
     if (cache != null) {
       cache.trackResponse(strategy);
@@ -70,6 +79,7 @@ public final class CacheInterceptor implements Interceptor {
     }
 
     // If we're forbidden from using the network and the cache is insufficient, fail.
+    //如果禁止联网并且缓存未命中，直接返回504 不往下执行了
     if (networkRequest == null && cacheResponse == null) {
       return new Response.Builder()
           .request(chain.request())
@@ -83,12 +93,13 @@ public final class CacheInterceptor implements Interceptor {
     }
 
     // If we don't need the network, we're done.
+    //无网状态，缓存命中，则可返回缓存数据
     if (networkRequest == null) {
       return cacheResponse.newBuilder()
           .cacheResponse(stripBody(cacheResponse))
           .build();
     }
-
+    //缓存无效，执行下一个拦截器
     Response networkResponse = null;
     try {
       networkResponse = chain.proceed(networkRequest);

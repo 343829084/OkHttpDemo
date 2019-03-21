@@ -33,7 +33,8 @@ import okhttp3.internal.Util;
  * pinner.
  *
  * <p>HTTP requests that share the same {@code Address} may also share the same {@link Connection}.
- * 描述了建立连接的全部配置
+ * 描述了建立连接的全部配置信息
+ * 地址的包装类
  * 包含请求的三种方式
  * 1：直连
  * 2：走代理
@@ -176,6 +177,12 @@ public final class Address {
     return result;
   }
 
+  /**
+   * 判断是否是同个地址
+   * 所有配置相同才是同个地址
+   * @param that
+   * @return
+   */
   boolean equalsNonHost(Address that) {
     return this.dns.equals(that.dns)
         && this.proxyAuthenticator.equals(that.proxyAuthenticator)

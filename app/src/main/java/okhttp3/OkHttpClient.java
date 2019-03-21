@@ -57,23 +57,23 @@ import static okhttp3.internal.Util.checkDuration;
  *
  * <h3>OkHttpClients should be shared</h3>
  *
- * <p>OkHttp performs best when you create a single {@code OkHttpClient} instance and reuse it for
+ * <p>OkHttp performs best when you create a single {@code Client} instance and reuse it for
  * all of your HTTP calls. This is because each client holds its own connection pool and thread
  * pools. Reusing connections and threads reduces latency and saves memory. Conversely, creating a
  * client for each request wastes resources on idle pools.
  *
- * <p>Use {@code new OkHttpClient()} to create a shared instance with the default settings:
+ * <p>Use {@code new Client()} to create a shared instance with the default settings:
  * <pre>   {@code
  *
  *   // The singleton HTTP client.
- *   public final OkHttpClient client = new OkHttpClient();
+ *   public final Client client = new Client();
  * }</pre>
  *
- * <p>Or use {@code new OkHttpClient.Builder()} to create a shared instance with custom settings:
+ * <p>Or use {@code new Client.Builder()} to create a shared instance with custom settings:
  * <pre>   {@code
  *
  *   // The singleton HTTP client.
- *   public final OkHttpClient client = new OkHttpClient.Builder()
+ *   public final Client client = new Client.Builder()
  *       .addInterceptor(new HttpLoggingInterceptor())
  *       .cache(new Cache(cacheDir, cacheSize))
  *       .build();
@@ -81,13 +81,13 @@ import static okhttp3.internal.Util.checkDuration;
  *
  * <h3>Customize your client with newBuilder()</h3>
  *
- * <p>You can customize a shared OkHttpClient instance with {@link #newBuilder()}. This builds a
+ * <p>You can customize a shared Client instance with {@link #newBuilder()}. This builds a
  * client that shares the same connection pool, thread pools, and configuration. Use the builder
  * methods to configure the derived client for a specific purpose.
  *
  * <p>This example shows a call with a short 500 millisecond timeout: <pre>   {@code
  *
- *   OkHttpClient eagerClient = client.newBuilder()
+ *   Client eagerClient = client.newBuilder()
  *       .readTimeout(500, TimeUnit.MILLISECONDS)
  *       .build();
  *   Response response = eagerClient.newCall(request).execute();
@@ -788,7 +788,7 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
      *   sslContext.init(null, new TrustManager[] { trustManager }, null);
      *   SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
      *
-     *   OkHttpClient client = new OkHttpClient.Builder()
+     *   Client client = new Client.Builder()
      *       .sslSocketFactory(sslSocketFactory, trustManager)
      *       .build();
      * }</pre>

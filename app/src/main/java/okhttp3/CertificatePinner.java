@@ -53,7 +53,7 @@ import okio.ByteString;
  *     CertificatePinner certificatePinner = new CertificatePinner.Builder()
  *         .add(hostname, "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
  *         .build();
- *     OkHttpClient client = OkHttpClient.Builder()
+ *     Client client = Client.Builder()
  *         .certificatePinner(certificatePinner)
  *         .build();
  *

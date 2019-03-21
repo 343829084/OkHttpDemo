@@ -153,8 +153,8 @@ public class Platform {
 
   public void logCloseableLeak(String message, Object stackTrace) {
     if (stackTrace == null) {
-      message += " To see where this was allocated, set the OkHttpClient logger level to FINE: "
-          + "Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);";
+      message += " To see where this was allocated, set the Client logger level to FINE: "
+          + "Logger.getLogger(Client.class.getName()).setLevel(Level.FINE);";
     }
     log(WARN, message, (Throwable) stackTrace);
   }

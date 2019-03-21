@@ -224,6 +224,7 @@ public final class Cache implements Closeable, Flushable {
   @Nullable CacheRequest put(Response response) {
     String requestMethod = response.request().method();
 
+    //只支持Get请求，其他请求则移除:考虑到效率问题，Get获取的资源修改频率不高
     if (HttpMethod.invalidatesCache(response.request().method())) {
       try {
         remove(response.request());
@@ -238,18 +239,20 @@ public final class Cache implements Closeable, Flushable {
       // so is high and the benefit is low.
       return null;
     }
-
+    //判断请求中的http数据包headers是否包含“*”的通配符，有则不缓存直接返回null
     if (HttpHeaders.hasVaryAll(response)) {
       return null;
     }
-
+  //用response对象构建1个Entry对象，Entry对象是Cache的1个内部类
     Entry entry = new Entry(response);
     DiskLruCache.Editor editor = null;
     try {
+      //得到1个DiskLruCache.Editor对象
       editor = cache.edit(key(response.request().url()));
       if (editor == null) {
         return null;
       }
+      //把这个entry写入，方法内部通过Okio写入，
       entry.writeTo(editor);
       return new CacheRequestImpl(editor);
     } catch (IOException e) {

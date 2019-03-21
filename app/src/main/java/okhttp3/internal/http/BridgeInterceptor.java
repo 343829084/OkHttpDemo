@@ -36,6 +36,10 @@ import static okhttp3.internal.Util.hostHeader;
  * Bridges from application code to network code. First it builds a network request from a user
  * request. Then it proceeds to call the network. Finally it builds a user response from the network
  * response.
+ * 1：构建用户网络请求 负责对网络请求进行加工
+ * 2:处理响应
+ * 请求经过处理：从应用层数据转化成网络调用层的数据类型
+ * 响应经过处理：将网络返回的数据类型转化成应用层数据类型
  */
 public final class BridgeInterceptor implements Interceptor {
   private final CookieJar cookieJar;
@@ -48,6 +52,9 @@ public final class BridgeInterceptor implements Interceptor {
     Request userRequest = chain.request();
     Request.Builder requestBuilder = userRequest.newBuilder();
 
+    /**
+     * 补全header
+     */
     RequestBody body = userRequest.body();
     if (body != null) {
       MediaType contentType = body.contentType();
@@ -81,6 +88,7 @@ public final class BridgeInterceptor implements Interceptor {
       requestBuilder.header("Accept-Encoding", "gzip");
     }
 
+    //加载cookies
     List<Cookie> cookies = cookieJar.loadForRequest(userRequest.url());
     if (!cookies.isEmpty()) {
       requestBuilder.header("Cookie", cookieHeader(cookies));

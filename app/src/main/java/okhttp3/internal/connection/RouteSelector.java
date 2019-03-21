@@ -55,7 +55,9 @@ final class RouteSelector {
   /* State for negotiating the next socket address to use. */
   private List<InetSocketAddress> inetSocketAddresses = Collections.emptyList();
 
-  /* State for negotiating failed routes */
+  /* State for negotiating failed routes
+   * 连接失败的路由列表
+    * */
   private final List<Route> postponedRoutes = new ArrayList<>();
 
   public RouteSelector(Address address, RouteDatabase routeDatabase, Call call,
@@ -70,6 +72,7 @@ final class RouteSelector {
 
   /**
    * Returns true if there's another set of routes to attempt. Every address has at least one route.
+   * 表明是否有可以使用的路由
    */
   public boolean hasNext() {
     return hasNextProxy() || !postponedRoutes.isEmpty();
@@ -82,6 +85,7 @@ final class RouteSelector {
 
     // Compute the next set of routes to attempt.
     List<Route> routes = new ArrayList<>();
+    //如果设置了代理
     while (hasNextProxy()) {
       // Postponed routes are always tried last. For example, if we have 2 proxies and all the
       // routes for proxy1 should be postponed, we'll move to proxy2. Only after we've exhausted
@@ -110,12 +114,17 @@ final class RouteSelector {
     return new Selection(routes);
   }
 
-  /** Prepares the proxy servers to try. */
+  /** Prepares the proxy servers to try.
+   * 准备代理服务器
+   * 使用场景:需要让连接使用代理，但不用系统的代理配置情况，用户才自己设置代理
+   * */
   private void resetNextProxy(HttpUrl url, Proxy proxy) {
+    //外部有传入代理的话，代理集合就包含唯一集合（来源OkHttpClient）
     if (proxy != null) {
       // If the user specifies a proxy, try that and only that.
       proxies = Collections.singletonList(proxy);
     } else {
+      //借助proxySelector来获得多个代理，系统默认收集的代理
       // Try each of the ProxySelector choices until one connection succeeds.
       List<Proxy> proxiesOrNull = address.proxySelector().select(url.uri());
       proxies = proxiesOrNull != null && !proxiesOrNull.isEmpty()
@@ -125,7 +134,9 @@ final class RouteSelector {
     nextProxyIndex = 0;
   }
 
-  /** Returns true if there's another proxy to try. */
+  /** Returns true if there's another proxy to try.
+   * 是否还有代理
+   * */
   private boolean hasNextProxy() {
     return nextProxyIndex < proxies.size();
   }

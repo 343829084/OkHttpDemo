@@ -57,7 +57,7 @@ public final class Transmitter {
   private @Nullable Object callStackTrace;
 
   private Request request;
-  private ExchangeFinder exchangeFinder;
+  private ExchangeFinder exchangeFinder;//RetryAndFollowUpInteceptor初始化的时候初始化该变量
 
   // Guarded by connectionPool.
   public RealConnection connection;
@@ -97,6 +97,11 @@ public final class Transmitter {
         call, eventListener);
   }
 
+  /**
+   * 构建Address的参数来源均是来自OkHttpClient
+   * @param url
+   * @return
+   */
   private Address createAddress(HttpUrl url) {
     SSLSocketFactory sslSocketFactory = null;
     HostnameVerifier hostnameVerifier = null;
