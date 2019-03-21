@@ -44,7 +44,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
 
 
   private final Transmitter transmitter;
-  private final @Nullable Exchange exchange;
+  private final @Nullable Exchange exchange;//执行ConnectInterceptor时候被初始化
   private final int index;
   private final Call call;
   private final int connectTimeout;

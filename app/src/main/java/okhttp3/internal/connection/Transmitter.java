@@ -117,7 +117,10 @@ public final class Transmitter {
         client.proxy(), client.protocols(), client.connectionSpecs(), client.proxySelector());
   }
 
-  /** Returns a new exchange to carry a new request and response. */
+  /** Returns a new exchange to carry a new request and response.
+   * 返回1个新的交换器用来携带请求和响应
+   *
+   * */
   Exchange newExchange(Interceptor.Chain chain, boolean doExtensiveHealthChecks) {
     synchronized (connectionPool) {
       if (noMoreExchanges) throw new IllegalStateException("released");

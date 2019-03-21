@@ -35,6 +35,7 @@ import static okhttp3.internal.Util.closeQuietly;
  * <ol>
  *   <li>If the current call already has a connection that can satisfy the request it is used.
  *       Using the same connection for an initial exchange and its follow-ups may improve locality.
+ *如果当前调用已经能够有满足请求的连接，则使用它；
  *
  *   <li>If there is a connection in the pool that can satisfy the request it is used. Note that
  *       it is possible for shared exchanges to make requests to different host names! See {@link
@@ -53,7 +54,7 @@ import static okhttp3.internal.Util.closeQuietly;
 final class ExchangeFinder {
   private final Transmitter transmitter;
   private final Address address;
-  private final RealConnectionPool connectionPool;
+  private final RealConnectionPool connectionPool;//连接池，在RetryAndFollowUpInterceptor准备阶段初始化ExchangeFinder时候赋值的，来自OkHttpClient
   private final Call call;
   private final EventListener eventListener;
 
@@ -99,6 +100,7 @@ final class ExchangeFinder {
   /**
    * Finds a connection and returns it if it is healthy. If it is unhealthy the process is repeated
    * until a healthy connection is found.
+   * 找到并且返回1个安全的连接
    */
   private RealConnection findHealthyConnection(int connectTimeout, int readTimeout,
       int writeTimeout, int pingIntervalMillis, boolean connectionRetryEnabled,
@@ -128,6 +130,8 @@ final class ExchangeFinder {
   /**
    * Returns a connection to host a new stream. This prefers the existing connection if it exists,
    * then the pool, finally building a new connection.
+   * 为该host返回1个连接，如果有存在的直接返回或者在连接池中查找
+   * 如果都不存在，那就创建1个连接
    */
   private RealConnection findConnection(int connectTimeout, int readTimeout, int writeTimeout,
       int pingIntervalMillis, boolean connectionRetryEnabled) throws IOException {

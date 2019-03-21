@@ -72,26 +72,34 @@ import static java.net.HttpURLConnection.HTTP_PROXY_AUTH;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static okhttp3.internal.Util.closeQuietly;
 
+
+/**
+ *  Connection的实现类，代表着链接socket的链路；
+ *  如果拥有RealConnection就代表了我们跟服务器有了1条通信链路
+ *  实现了3次握手
+ */
+
 public final class RealConnection extends Http2Connection.Listener implements Connection {
   private static final String NPE_THROW_WITH_NULL = "throw with null exception";
   private static final int MAX_TUNNEL_ATTEMPTS = 21;
 
   public final RealConnectionPool connectionPool;
-  private final Route route;
+  private final Route route;//路由
 
   // The fields below are initialized by connect() and never reassigned.
 
   /** The low-level TCP socket. */
-  private Socket rawSocket;
+  private Socket rawSocket;//底层socket
 
   /**
    * The application layer socket. Either an {@link SSLSocket} layered over {@link #rawSocket}, or
    * {@link #rawSocket} itself if this connection does not use SSL.
    */
-  private Socket socket;
-  private Handshake handshake;
-  private Protocol protocol;
-  private Http2Connection http2Connection;
+  private Socket socket;//应用层socket
+  private Handshake handshake;//握手
+  private Protocol protocol;//协议
+  private Http2Connection http2Connection;//Http2的链接
+  //与服务器交互的输入输出流
   private BufferedSource source;
   private BufferedSink sink;
 
@@ -100,21 +108,26 @@ public final class RealConnection extends Http2Connection.Listener implements Co
   /**
    * If true, no new exchanges can be created on this connection. Once true this is always true.
    * Guarded by {@link #connectionPool}.
+   * 如果noNewExchanges被设置为true，那么这个链路中就不会创建新的流；并且不会被重新赋值
    */
   boolean noNewExchanges;
 
   /**
    * The number of times there was a problem establishing a stream that could be due to route
    * chosen. Guarded by {@link #connectionPool}.
+   * 由于路由问题无法建立连接的次数
    */
   int routeFailureCount;
 
+  //成功的次数
   int successCount;
+  //被拒绝的次数
   private int refusedStreamCount;
 
   /**
    * The maximum number of concurrent streams that can be carried by this connection. If {@code
    * allocations.size() < allocationLimit} then new streams can be created on this connection.
+   * 可承载并发的最大数量
    */
   private int allocationLimit = 1;
 
@@ -150,6 +163,7 @@ public final class RealConnection extends Http2Connection.Listener implements Co
       EventListener eventListener) {
     if (protocol != null) throw new IllegalStateException("already connected");
 
+    //选择线路
     RouteException routeException = null;
     List<ConnectionSpec> connectionSpecs = route.address().connectionSpecs();
     ConnectionSpecSelector connectionSpecSelector = new ConnectionSpecSelector(connectionSpecs);

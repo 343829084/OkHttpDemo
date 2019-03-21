@@ -39,6 +39,8 @@ import okio.Source;
 /**
  * Transmits a single HTTP request and a response pair. This layers connection management and events
  * on {@link ExchangeCodec}, which handles the actual I/O.
+ * 传输一个HTTP请求和一个响应对。这个层连接管理和事件
+ * * on {@link ExchangeCodec}，它处理实际的I/O。
  */
 public final class Exchange {
   final Transmitter transmitter;
