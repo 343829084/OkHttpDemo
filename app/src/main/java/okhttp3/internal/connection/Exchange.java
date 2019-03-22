@@ -65,6 +65,7 @@ public final class Exchange {
   public void writeRequestHeaders(Request request) throws IOException {
     try {
       eventListener.requestHeadersStart(call);
+      //解码器写入
       codec.writeRequestHeaders(request);
       eventListener.requestHeadersEnd(call, request);
     } catch (IOException e) {

@@ -36,11 +36,12 @@ public final class CallServerInterceptor implements Interceptor {
 
   @Override public Response intercept(Chain chain) throws IOException {
     RealInterceptorChain realChain = (RealInterceptorChain) chain;
-    Exchange exchange = realChain.exchange();
+    Exchange exchange = realChain.exchange();//获取在ConnectInterceptor创建的Exchange
     Request request = realChain.request();
 
     long sentRequestMillis = System.currentTimeMillis();
 
+    //调用内部的解码器写入请求头
     exchange.writeRequestHeaders(request);
 
     boolean responseHeadersStarted = false;
@@ -49,6 +50,8 @@ public final class CallServerInterceptor implements Interceptor {
       // If there's a "Expect: 100-continue" header on the request, wait for a "HTTP/1.1 100
       // Continue" response before transmitting the request body. If we don't get that, return
       // what we did get (such as a 4xx response) without ever transmitting the request body.
+      //如果请求上的header有1个Expect:100-continue报头,则等待1个 “Http/1.1 100”响应
+      //在发送请求体之前继续响应;如果未收到，在未传输请求体下，我们确实收到了4xx响应
       if ("100-continue".equalsIgnoreCase(request.header("Expect"))) {
         exchange.flushRequest();
         responseHeadersStarted = true;
@@ -56,6 +59,7 @@ public final class CallServerInterceptor implements Interceptor {
         responseBuilder = exchange.readResponseHeaders(true);
       }
 
+      //写入请求体
       if (responseBuilder == null) {
         if (request.body() instanceof DuplexRequestBody) {
           // Prepare a duplex body so that the application can send a request body later.
@@ -84,6 +88,7 @@ public final class CallServerInterceptor implements Interceptor {
       exchange.responseHeadersStart();
     }
 
+    //读取响应头
     if (responseBuilder == null) {
       responseBuilder = exchange.readResponseHeaders(false);
     }
@@ -95,6 +100,7 @@ public final class CallServerInterceptor implements Interceptor {
         .receivedResponseAtMillis(System.currentTimeMillis())
         .build();
 
+    //读取响应体
     int code = response.code();
     if (code == 100) {
       // server sent a 100-continue even though we did not request one.
