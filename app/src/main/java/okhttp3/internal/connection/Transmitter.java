@@ -147,11 +147,13 @@ public final class Transmitter {
   /**
    * Remove the transmitter from the connection's list of allocations. Returns a socket that the
    * caller should close.
+   * 从连接的分配列表中移除发送器，返回1个socket对象
    */
   @Nullable Socket releaseConnectionNoEvents() {
     assert (Thread.holdsLock(connectionPool));
 
     int index = -1;
+    //遍历该连接携带的流列表，找到当前对象就结束循环
     for (int i = 0, size = this.connection.transmitters.size(); i < size; i++) {
       Reference<Transmitter> reference = this.connection.transmitters.get(i);
       if (reference.get() == this) {
@@ -159,7 +161,7 @@ public final class Transmitter {
         break;
       }
     }
-
+    //没找到
     if (index == -1) throw new IllegalStateException();
 
     RealConnection released = this.connection;

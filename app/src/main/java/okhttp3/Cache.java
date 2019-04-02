@@ -166,14 +166,14 @@ public final class Cache implements Closeable, Flushable {
     }
   };
 
-  final DiskLruCache cache;
+  final DiskLruCache cache;//缓存管理类，LRU算法
 
   /* read and write statistics, all guarded by 'this' */
   int writeSuccessCount;
   int writeAbortCount;
-  private int networkCount;
-  private int hitCount;
-  private int requestCount;
+  private int networkCount;//网络请求数量
+  private int hitCount;//缓存命中数量
+  private int requestCount;//请求数量
 
   /**
    * Create a cache of at most {@code maxSize} bytes in {@code directory}.
@@ -186,10 +186,12 @@ public final class Cache implements Closeable, Flushable {
     this.cache = DiskLruCache.create(fileSystem, directory, VERSION, ENTRY_COUNT, maxSize);
   }
 
+  //获取存储缓存的key
   public static String key(HttpUrl url) {
     return ByteString.encodeUtf8(url.toString()).md5().hex();
   }
 
+  //获取缓存
   @Nullable Response get(Request request) {
     String key = key(request.url());
     DiskLruCache.Snapshot snapshot;
@@ -221,6 +223,7 @@ public final class Cache implements Closeable, Flushable {
     return response;
   }
 
+  //放入缓存
   @Nullable CacheRequest put(Response response) {
     String requestMethod = response.request().method();
 

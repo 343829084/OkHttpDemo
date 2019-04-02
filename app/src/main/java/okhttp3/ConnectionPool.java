@@ -23,6 +23,7 @@ import okhttp3.internal.connection.RealConnectionPool;
  * Manages reuse of HTTP and HTTP/2 connections for reduced network latency. HTTP requests that
  * share the same {@link Address} may share a {@link Connection}. This class implements the policy
  * of which connections to keep open for future use.
+ * 管理http和http/2的链接，以便减少网络请求延迟。同一个address将共享同一个connection。该类实现了复用连接的目标
  */
 public final class ConnectionPool {
   final RealConnectionPool delegate;

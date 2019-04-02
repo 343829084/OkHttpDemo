@@ -140,8 +140,9 @@ public final class CacheStrategy {
     public Factory(long nowMillis, Request request, Response cacheResponse) {
       this.nowMillis = nowMillis;
       this.request = request;
-      this.cacheResponse = cacheResponse;
+      this.cacheResponse = cacheResponse;//本地已缓存的
 
+      //如果本地有缓存数据
       if (cacheResponse != null) {
         this.sentRequestMillis = cacheResponse.sentRequestAtMillis();
         this.receivedResponseMillis = cacheResponse.receivedResponseAtMillis();
@@ -154,20 +155,21 @@ public final class CacheStrategy {
          * Age:
          */
         Headers headers = cacheResponse.headers();
+        //解析以缓存的头部信息
         for (int i = 0, size = headers.size(); i < size; i++) {
-          String fieldName = headers.name(i);
+          String fieldName = headers.name(i);//头部字段
           String value = headers.value(i);
           if ("Date".equalsIgnoreCase(fieldName)) {
             servedDate = HttpDate.parse(value);
             servedDateString = value;
-          } else if ("Expires".equalsIgnoreCase(fieldName)) {
+          } else if ("Expires".equalsIgnoreCase(fieldName)) {//当前资源的有效时间
             expires = HttpDate.parse(value);
-          } else if ("Last-Modified".equalsIgnoreCase(fieldName)) {
+          } else if ("Last-Modified".equalsIgnoreCase(fieldName)) {//资源上次修改的时间
             lastModified = HttpDate.parse(value);
             lastModifiedString = value;
-          } else if ("ETag".equalsIgnoreCase(fieldName)) {
+          } else if ("ETag".equalsIgnoreCase(fieldName)) {//服务器响应客户端请求的时候，告诉客户端该资源在服务器的唯一标识
             etag = value;
-          } else if ("Age".equalsIgnoreCase(fieldName)) {
+          } else if ("Age".equalsIgnoreCase(fieldName)) {//资源有效时间
             ageSeconds = HttpHeaders.parseSeconds(value, -1);
           }
         }
@@ -222,7 +224,7 @@ public final class CacheStrategy {
 
       CacheControl responseCaching = cacheResponse.cacheControl();//获取响应的cacheControl
 
-      long ageMillis = cacheResponseAge();//获取响应年龄
+      long ageMillis = cacheResponseAge();//获取响应时间
       long freshMillis = computeFreshnessLifetime();//获取上次响应刷新的时间
 
       //如果请求里面有最大持久时间要求，则两者选择最短时间的要求

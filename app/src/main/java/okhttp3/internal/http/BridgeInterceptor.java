@@ -59,11 +59,12 @@ public final class BridgeInterceptor implements Interceptor {
     if (body != null) {
       MediaType contentType = body.contentType();
       if (contentType != null) {
+        //请求实体的媒体类型
         requestBuilder.header("Content-Type", contentType.toString());
       }
-
       long contentLength = body.contentLength();
       if (contentLength != -1) {
+        // 请求实体的内容长度
         requestBuilder.header("Content-Length", Long.toString(contentLength));
         requestBuilder.removeHeader("Transfer-Encoding");
       } else {
@@ -72,28 +73,32 @@ public final class BridgeInterceptor implements Interceptor {
       }
     }
 
+    //请求资源所在服务器
     if (userRequest.header("Host") == null) {
       requestBuilder.header("Host", hostHeader(userRequest.url(), false));
     }
 
+    //请求的连接方式
     if (userRequest.header("Connection") == null) {
       requestBuilder.header("Connection", "Keep-Alive");
     }
 
     // If we add an "Accept-Encoding: gzip" header field we're responsible for also decompressing
     // the transfer stream.
+    //优先的内容编码，告知服务器客户端支持的内容编码和内容编码的优先级
     boolean transparentGzip = false;
     if (userRequest.header("Accept-Encoding") == null && userRequest.header("Range") == null) {
       transparentGzip = true;
       requestBuilder.header("Accept-Encoding", "gzip");
     }
 
-    //加载cookies
+    //加载cookies，缓存的客户端信息
     List<Cookie> cookies = cookieJar.loadForRequest(userRequest.url());
     if (!cookies.isEmpty()) {
       requestBuilder.header("Cookie", cookieHeader(cookies));
     }
 
+    //http客户端程序的信息
     if (userRequest.header("User-Agent") == null) {
 //      requestBuilder.header("User-Agent", Version.userAgent());
     }

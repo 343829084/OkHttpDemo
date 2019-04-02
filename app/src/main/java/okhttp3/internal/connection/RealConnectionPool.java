@@ -42,14 +42,17 @@ public final class RealConnectionPool {
    * Background threads are used to cleanup expired connections. There will be at most a single
    * thread running per connection pool. The thread pool executor permits the pool itself to be
    * garbage collected.
+   * 用来清除过期连接的线程池
    */
   private static final Executor executor = new ThreadPoolExecutor(0 /* corePoolSize */,
       Integer.MAX_VALUE /* maximumPoolSize */, 60L /* keepAliveTime */, TimeUnit.SECONDS,
       new SynchronousQueue<>(), Util.threadFactory("OkHttp ConnectionPool", true));
 
   /** The maximum number of idle connections for each address. */
+  //每个地址的最大空闲连接数
   private final int maxIdleConnections;
   private final long keepAliveDurationNs;
+  //清理任务
   private final Runnable cleanupRunnable = () -> {
     while (true) {
       long waitNanos = cleanup(System.nanoTime());
@@ -67,8 +70,10 @@ public final class RealConnectionPool {
     }
   };
 
+  //链接的双向队列
   private final Deque<RealConnection> connections = new ArrayDeque<>();
-  final RouteDatabase routeDatabase = new RouteDatabase();
+  final RouteDatabase routeDatabase = new RouteDatabase();//连接黑名单
+  //标识为：清理任务是否在执行
   boolean cleanupRunning;
 
   public RealConnectionPool(int maxIdleConnections, long keepAliveDuration, TimeUnit timeUnit) {
@@ -100,6 +105,8 @@ public final class RealConnectionPool {
    * <p>If {@code routes} is non-null these are the resolved routes (ie. IP addresses) for the
    * connection. This is used to coalesce related domains to the same HTTP/2 connection, such as
    * {@code square.com} and {@code square.ca}.
+   *
+   * 尝试为transmitter找到1个可用的连接，true表示获取到了
    */
   boolean transmitterAcquirePooledConnection(Address address, Transmitter transmitter,
       @Nullable List<Route> routes, boolean requireMultiplexed) {

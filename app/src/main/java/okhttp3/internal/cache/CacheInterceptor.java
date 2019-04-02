@@ -51,6 +51,8 @@ public final class CacheInterceptor implements Interceptor {
   }
 
   @Override public Response intercept(Chain chain) throws IOException {
+
+    //获取本地缓存
     Response cacheCandidate = cache != null
         ? cache.get(chain.request())
         : null;
@@ -79,7 +81,7 @@ public final class CacheInterceptor implements Interceptor {
     }
 
     // If we're forbidden from using the network and the cache is insufficient, fail.
-    //如果禁止联网并且缓存未命中，直接返回504 不往下执行了
+    //如果禁止联网并且缓存未命中，自己构建1个返回体直接返回504 不往下执行了
     if (networkRequest == null && cacheResponse == null) {
       return new Response.Builder()
           .request(chain.request())
@@ -111,7 +113,9 @@ public final class CacheInterceptor implements Interceptor {
     }
 
     // If we have a cache response too, then we're doing a conditional get.
+    //本地已经存有缓存的情况
     if (cacheResponse != null) {
+      //判断是否  缓存，服务端资源未改变，合并缓存
       if (networkResponse.code() == HTTP_NOT_MODIFIED) {
         Response response = cacheResponse.newBuilder()
             .headers(combine(cacheResponse.headers(), networkResponse.headers()))
@@ -136,10 +140,12 @@ public final class CacheInterceptor implements Interceptor {
         .cacheResponse(stripBody(cacheResponse))
         .networkResponse(stripBody(networkResponse))
         .build();
-
+    //通过网络获取了结果并且本地不存在缓存的情况
     if (cache != null) {
+      //如果设置了缓存
       if (HttpHeaders.hasBody(response) && CacheStrategy.isCacheable(response, networkRequest)) {
         // Offer this request to the cache.
+        //插入缓存
         CacheRequest cacheRequest = cache.put(response);
         return cacheWritingResponse(cacheRequest, response);
       }

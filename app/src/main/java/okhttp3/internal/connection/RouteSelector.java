@@ -43,13 +43,13 @@ import okhttp3.internal.Util;
  * 1收集路由信息，2选择路由，3维护失败路由。
  */
 final class RouteSelector {
-  private final Address address;
-  private final RouteDatabase routeDatabase;
-  private final Call call;
+  private final Address address;//请求地址
+  private final RouteDatabase routeDatabase;//路由黑名单
+  private final Call call;//
   private final EventListener eventListener;
 
   /* State for negotiating the next proxy to use. */
-  private List<Proxy> proxies = Collections.emptyList();
+  private List<Proxy> proxies = Collections.emptyList();//代理集合
   private int nextProxyIndex;
 
   /* State for negotiating the next socket address to use. */
@@ -216,7 +216,9 @@ final class RouteSelector {
     return address.getHostAddress();
   }
 
-  /** A set of selected Routes. */
+  /** A set of selected Routes.
+   * 被挑选出来的路由
+   * */
   public static final class Selection {
     private final List<Route> routes;
     private int nextRouteIndex = 0;
